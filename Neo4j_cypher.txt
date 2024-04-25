@@ -1,0 +1,100 @@
+#Create Node and Load Harvesting CTE into Neo4j
+
+LOAD CSV WITH HEADERS 
+FROM 'file:///harvesting.csv' AS row
+MERGE (hl:HarvestLoc{farmName:row.farmName})
+SET
+hl.dataSubmitter=row.dataSubmitter,
+hl.recipient=row.recipient,
+hl.farmName=row.farmName,
+hl.commodity=row.commodity,
+hl.quantity=row.quantity,
+hl.unitOfMeasure=row.unitOfMeasure,
+hl.fieldName=row.fieldName,
+hl.containerName=row.containerName,
+hl.cteDate=row.cteDate,
+hl.phoneNumber=row.phoneNumber,
+hl.contaminated= row.contaminated,
+hl.gtin=row.gtin,
+hl.sgln=row.sgln,
+hl.pgln=row.pgln,
+hl.eventID=row.eventID,
+hl.parentID=row.parentID
+
+#Create Node and Load Receiving CTE into Neo4j
+
+LOAD CSV WITH HEADERS 
+FROM 'file:///receiving.csv' AS row
+MERGE (rl:ReceiveLoc{dataSubmitter:row.dataSubmitter})
+SET
+rl.dataSubmitter=row.dataSubmitter,
+rl.traceabilityLotCode=row.traceabilityLotCode,
+rl.quantity=row.quantity,
+rl.unitOfMeasure=row.unitOfMeasure,
+rl.productDescription = row.productDescription,
+rl.previousSourceLocation=row.previousSourceLocation,
+rl.receivingLocation = row.receivingLocation,
+rl.cteDate=row.cteDate,
+rl.traceabilityLotCodeSourceLocation = row.traceabilityLotCodeSourceLocation,
+rl.referenceDocumentTypeNumber = row.referenceDocumentTypeNumber,
+rl.contaminated= row.contaminated,
+rl.gtin=row.gtin,
+rl.sgln=row.sgln,
+rl.pgln=row.pgln,
+rl.eventID=row.eventID,
+rl.parentID=row.parentID
+
+#Create relationships between harvesting and receiving 
+
+LOAD CSV WITH HEADERS
+FROM 'file:///receiving.csv' AS row
+MATCH (hl:HarvestLoc {farmName:row.farmName})
+MATCH (rl:ReceiveLoc {previousSourceLocation:row.previousSourceLocation})
+MERGE (hl)-[r:HARVEST]->(rl)
+
+#Create Node and Load Cooling CTE into Neo4j
+
+LOAD CSV WITH HEADERS 
+FROM 'file:///cooling.csv' AS row
+MERGE (cl:CoolingLoc{coolerLocation:row.coolerLocation})
+SET
+cl.dataSubmitter=row.dataSubmitter,
+cl.recipient=row.recipient,
+cl.commodity=row.commodity,
+cl.quantity=row.quantity,
+cl.unitOfMeasure=row.unitOfMeasure,
+cl.coolerLocation = row.coolerLocation,
+cl.cteDate=row.cteDate,
+cl.harvesterName = row.harvesterName,
+cl.phoneNumber=row.phoneNumber,
+cl.contaminated= row.contaminated,
+cl.gtin=row.gtin,
+cl.sgln=row.sgln,
+cl.pgln=row.pgln,
+cl.eventID=row.eventID,
+cl.parentID=row.parentID
+
+#Create Node and Load First Land Based Receiving CTE into Neo4j
+
+LOAD CSV WITH HEADERS 
+FROM 'file:///firstLandBasedReceiving.csv' AS row 
+MERGE (flb:LandBased{dataSubmitter:row.dataSubmitter})
+SET
+flb.dataSubmitter=row.dataSubmitter,
+flb.traceabilityLotCode=row.traceabilityLotCode,
+flb.commodity=row.commodity,
+flb.productDescription=row.productDescription,
+flb.unitOfMeasure=row.unitOfMeasure,
+flb.harvestDateAndLocation=row.harvestDateAndLocation,
+flb.traceabilityLotCodeSourceLocation=row.traceabilityLotCodeSourceLocation,
+flb.cteDate=row.cteDate,
+flb.referenceDocumentTypeNumber=row.referenceDocumentTypeNumber,
+flb.contaminated=row.contaminated,
+flb.gtin=row.gtin,
+flb.sgln=row.sgln,
+flb.pgln=row.pgln,
+flb.eventID=row.eventID,
+flb.parentID=row.parentID
+
+#View all the nodes 
+MATCH(n) RETURN(n) 
